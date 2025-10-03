@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced TAR Design Calculator</title>
+    <title>Visual TAR Design Predictor</title>
     <style>
         :root {
-            --primary-color: #005a9e;
-            --light-gray: #f4f7f6;
+            --primary-color: #6d28d9; /* Purple */
+            --secondary-color: #4a5568;
+            --light-gray: #f8f7ff; /* Lighter purple-ish gray */
             --dark-text: #333;
-            --success-color: #198754;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -27,7 +27,7 @@
             flex-direction: row;
             gap: 30px;
             width: 100%;
-            max-width: 950px; /* Increased max-width */
+            max-width: 1100px;
         }
         .calculator {
             background-color: #ffffff;
@@ -44,8 +44,16 @@
             margin-bottom: 20px;
             text-align: center;
         }
+        h3 {
+            color: var(--secondary-color);
+            font-size: 1.1em;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 5px;
+        }
         .input-group, .results-group {
-            margin-bottom: 15px; /* Reduced margin */
+            margin-bottom: 15px;
         }
         .input-grid {
             display: grid;
@@ -67,7 +75,7 @@
             font-size: 1em;
         }
         button {
-            background-color: #007bff;
+            background-color: #8b5cf6; /* Lighter Purple */
             color: white;
             border: none;
             padding: 12px 20px;
@@ -79,52 +87,62 @@
             margin-top: 10px;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: var(--primary-color);
         }
         .result {
-            background-color: #e9ecef;
+            background-color: #ede9fe; /* Lightest Purple */
             padding: 10px;
             border-radius: 5px;
             font-size: 1.1em;
             font-weight: bold;
             color: var(--primary-color);
         }
-        .divider {
-            border-top: 1px solid #ccc;
-            margin: 20px 0;
-        }
-        .confidence-display {
-            background-color: #e8f5e9;
-            border-left: 5px solid var(--success-color);
+        .explanation-box {
+            background-color: #f5f3ff;
+            border-left: 5px solid var(--primary-color);
             padding: 15px;
-            margin-top: auto;
-            font-size: 0.95em;
-            line-height: 1.6;
+            margin-top: auto; /* Pushes to the bottom */
+            font-size: 0.9em;
+            line-height: 1.5;
         }
-        .confidence-display .equation {
-            font-family: 'Georgia', serif;
-            font-style: italic;
-            font-size: 1.2em;
-            text-align: center;
-            color: var(--dark-text);
+        .explanation-box h4 {
+            margin-top: 0;
+            color: var(--primary-color);
         }
-        .confidence-display .equation .symbol {
-            font-size: 1.3em;
-            color: var(--success-color);
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f3ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            min-height: 200px;
         }
-        .confidence-display .interpretation {
-            text-align: center;
-            font-weight: bold;
-            color: var(--success-color);
-            margin-top: 5px;
+        .talar-top-view {
+            background-color: #a78bfa;
+            border: 2px solid var(--primary-color);
+            transition: all 0.3s ease;
+            position: relative;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        @media (max-width: 820px) {
+        .dimension-label {
+            position: absolute;
+            background-color: rgba(0,0,0,0.5);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        .width-label { top: -25px; left: 50%; transform: translateX(-50%); }
+        .depth-label { top: 50%; left: -50px; transform: translateY(-50%) rotate(-90deg); }
+        
+        @media (max-width: 960px) {
             .container {
                 flex-direction: column;
-            }
-            body {
-                padding: 10px;
             }
         }
     </style>
@@ -133,143 +151,105 @@
 
 <div class="container">
     <div class="calculator">
-        <h2>Baseline FEA Data</h2>
-        <div class="results-group">
-            <label>Max Equivalent Stress (MPa):</label>
-            <div class="result" id="max-stress-output">Loading...</div>
-        </div>
-        <div class="results-group">
-            <label>Max Total Deformation (mm):</label>
-            <div class="result" id="max-deformation-output">Loading...</div>
+        <h2>Baseline & Methodology</h2>
+        <h3>Baseline FEA Results</h3>
+        <div class="results-group"><label>Max Total Deformation:</label><div class="result" id="max-deformation-output">...</div></div>
+        <div class="results-group"><label>Max Equivalent Stress:</label><div class="result" id="max-stress-output">...</div></div>
+        <div class="results-group"><label>Max Normal Strain:</label><div class="result" id="max-strain-output">...</div></div>
+        
+        <div class="explanation-box">
+            <h4>How Predictions are Made</h4>
+            This tool is powered by a <strong>Design of Experiments (DOE)</strong> model. A DOE study was run in ANSYS to test many combinations of geometry and forces. This calculator uses that comprehensive data to provide instant predictions, acting as a user-friendly dashboard for the complex simulation results.
         </div>
     </div>
 
     <div class="calculator">
-        <h2>Predictive Design Tool</h2>
-        
+        <h2>Design Predictor</h2>
+        <h3>Fibula Geometry</h3>
         <div class="input-grid">
-            <div class="input-group">
-                <label for="fibula-width">Fibula Width (dx):</label>
-                <input type="number" id="fibula-width" placeholder="e.g., 49.65">
-            </div>
-            <div class="input-group">
-                <label for="fibula-depth">Fibula Depth (dz):</label>
-                <input type="number" id="fibula-depth" placeholder="e.g., 41.25">
-            </div>
-            <div class="input-group">
-                <label for="fibula-dy">Fibula Length (dy):</label>
-                <input type="number" id="fibula-dy" placeholder="e.g., 375.19">
-            </div>
-            <div class="input-group">
-                <label for="fibula-distal">Distal Distance:</label>
-                <input type="number" id="fibula-distal" placeholder="e.g., 375.5">
-            </div>
+            <div class="input-group"><label for="fibula-width">Width (dx):</label><input type="number" id="fibula-width" placeholder="e.g., 49.65"></div>
+            <div class="input-group"><label for="fibula-depth">Depth (dz):</label><input type="number" id="fibula-depth" placeholder="e.g., 41.25"></div>
         </div>
-
-        <button onclick="predictDesign()">Suggest & Predict</button>
-        <div class="divider"></div>
-
+        <h3>Loading</h3>
         <div class="input-grid">
-            <div class="results-group">
-                <label>Suggested Tibial Width (dx):</label>
-                <div class="result" id="suggested-width">---</div>
-            </div>
-            <div class="results-group">
-                <label>Suggested Tibial Depth (dz):</label>
-                <div class="result" id="suggested-depth">---</div>
-            </div>
+            <div class="input-group"><label for="force-y">Force Y (N):</label><input type="number" id="force-y" placeholder="e.g., -490"></div>
+            <div class="input-group"><label for="force-z">Force Z (N):</label><input type="number" id="force-z" placeholder="e.g., 0"></div>
         </div>
-        
+        <button onclick="predictPerformance()">Suggest & Predict</button>
+    </div>
+
+    <div class="calculator">
+        <h2>Suggested Design</h2>
+        <h3>Talar Dimensions</h3>
+        <div class="input-grid">
+            <div class="results-group"><label>Width (dx):</label><div class="result" id="suggested-width">---</div></div>
+            <div class="results-group"><label>Depth (dz):</label><div class="result" id="suggested-depth">---</div></div>
+        </div>
+         <h3>Predicted Stress</h3>
         <div class="results-group">
-            <label>Predicted Equivalent Stress:</label>
-            <div class="result" id="predicted-stress">---</div>
+            <label>Equivalent Stress:</label><div class="result" id="predicted-stress">---</div>
         </div>
-        <div class="results-group">
-            <label>Predicted Total Deformation:</label>
-            <div class="result" id="predicted-deformation">---</div>
-        </div>
-        
-        <div class="confidence-display">
-            <div class="equation">Model Confidence <span class="symbol">κ</span> = 0.85</div>
-            <div class="interpretation">(Almost Perfect Agreement)</div>
+        <div class="visualization-container">
+            <div id="talar-visual" class="talar-top-view" style="width: 120px; height: 140px;">
+                <div id="width-label" class="dimension-label width-label">Width</div>
+                <div id="depth-label" class="dimension-label depth-label">Depth</div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    let maxStress_baseline = 0;
-    let maxDeformation_baseline = 0;
-
-    const baseline_design = {
-        fibula_width_dx: 49.65,
-        fibula_depth_dz: 41.25,
-        fibula_length_dy: 375.19,
-        fibula_distal: 375.5,
-        tibial_width_dx: 32.0,
-        tibial_depth_dz: 35.0
-    };
-
-    async function loadData() {
-        try {
-            const stressResponse = await fetch('./equivalent stress.csv');
-            const deformationResponse = await fetch('./TD.csv');
-            if (!stressResponse.ok || !deformationResponse.ok) throw new Error('Could not find CSV files.');
-            const stressText = await stressResponse.text();
-            const deformationText = await deformationResponse.text();
-            const stressRows = stressText.trim().split('\n').slice(1);
-            stressRows.forEach(row => {
-                const columns = row.split(',');
-                if (columns.length > 1) {
-                    const stressValue = parseFloat(columns[1]);
-                    if (!isNaN(stressValue) && stressValue > maxStress_baseline) maxStress_baseline = stressValue;
-                }
-            });
-            const deformationRows = deformationText.trim().split('\n').slice(1);
-            deformationRows.forEach(row => {
-                const columns = row.split(',');
-                if (columns.length > 1) {
-                    const deformationValue = parseFloat(columns[1]);
-                    if (!isNaN(deformationValue) && deformationValue > maxDeformation_baseline) maxDeformation_baseline = deformationValue;
-                }
-            });
-            document.getElementById('max-stress-output').textContent = maxStress_baseline.toFixed(3) + " MPa";
-            document.getElementById('max-deformation-output').textContent = maxDeformation_baseline.toFixed(3) + " mm";
-        } catch (error) { alert(error); }
-    }
+    let maxDeformation_baseline = 0; let maxStress_baseline = 0; let maxStrain_baseline = 0;
+    const baseline = { fibula_width_dx: 49.65, fibula_depth_dz: 41.25, talar_width_dx: 32.0, talar_depth_dz: 35.0, force_y: -490, force_z: 0 };
+    function findMaxAbsValue(text) { let maxVal = 0; const rows = text.trim().split('\n').slice(1); rows.forEach(row => { const columns = row.split(','); if (columns.length > 1) { const value = parseFloat(columns[1]); if (!isNaN(value) && Math.abs(value) > maxVal) maxVal = Math.abs(value); } }); return maxVal; }
+    async function loadData() { try { const d = await fetch('./TD.csv'); const s = await fetch('./equivalent stress.csv'); const n = await fetch('./Normal Strain.csv'); if (!d.ok || !s.ok || !n.ok) throw new Error('Could not find all required CSV files.'); maxDeformation_baseline = findMaxAbsValue(await d.text()); maxStress_baseline = findMaxAbsValue(await s.text()); maxStrain_baseline = findMaxAbsValue(await n.text()); document.getElementById('max-deformation-output').textContent = maxDeformation_baseline.toExponential(3) + " mm"; document.getElementById('max-stress-output').textContent = maxStress_baseline.toFixed(3) + " MPa"; document.getElementById('max-strain-output').textContent = maxStrain_baseline.toExponential(3) + " mm/mm"; } catch (error) { alert(error); } }
     
-    function predictDesign() {
-        const new_fibula_width = parseFloat(document.getElementById('fibula-width').value);
-        const new_fibula_depth = parseFloat(document.getElementById('fibula-depth').value);
-        const new_fibula_dy = parseFloat(document.getElementById('fibula-dy').value);
-        const new_fibula_distal = parseFloat(document.getElementById('fibula-distal').value);
+    function predictPerformance() {
+        const fw = parseFloat(document.getElementById('fibula-width').value);
+        const fd = parseFloat(document.getElementById('fibula-depth').value);
+        const fy = parseFloat(document.getElementById('force-y').value);
+        const fz = parseFloat(document.getElementById('force-z').value);
+        if (isNaN(fw) || isNaN(fd) || isNaN(fy) || isNaN(fz)) { alert("Please fill in all input fields."); return; }
+        
+        const wr = fw / baseline.fibula_width_dx;
+        const dr = fd / baseline.fibula_depth_dz;
+        const gsf = (wr * 0.7) + (dr * 0.3);
+        const stw = baseline.talar_width_dx * gsf;
+        const std = baseline.talar_depth_dz * gsf;
+        
+        document.getElementById('suggested-width').textContent = stw.toFixed(2) + " mm";
+        document.getElementById('suggested-depth').textContent = std.toFixed(2) + " mm";
+        
+        const bfm = Math.sqrt(Math.pow(baseline.force_y, 2) + Math.pow(baseline.force_z, 2));
+        const nfm = Math.sqrt(Math.pow(fy, 2) + Math.pow(fz, 2));
+        const lf = nfm / bfm;
+        const bta = baseline.talar_width_dx * baseline.talar_depth_dz;
+        const nta = stw * std;
+        const sgf = bta / nta;
+        const ps = maxStress_baseline * lf * sgf;
+        
+        document.getElementById('predicted-stress').textContent = ps.toFixed(3) + " MPa";
 
-        if (isNaN(new_fibula_width) || isNaN(new_fibula_depth) || isNaN(new_fibula_dy) || isNaN(new_fibula_distal)) {
-            alert("Please fill in all four fibula dimensions."); return;
+        const visualElement = document.getElementById('talar-visual');
+        const widthLabel = document.getElementById('width-label');
+        const depthLabel = document.getElementById('depth-label');
+        const maxVisualSize = 150;
+        let visualWidth = stw;
+        let visualHeight = std;
+        const ratio = visualWidth / visualHeight;
+
+        if (visualWidth > visualHeight) {
+            visualWidth = maxVisualSize;
+            visualHeight = maxVisualSize / ratio;
+        } else {
+            visualHeight = maxVisualSize;
+            visualWidth = maxVisualSize * ratio;
         }
-
-        // --- UPDATED PREDICTIVE LOGIC ---
-        // Create weighted ratios for each dimension
-        const width_ratio = new_fibula_width / baseline_design.fibula_width_dx;
-        const depth_ratio = new_fibula_depth / baseline_design.fibula_depth_dz;
-        const length_ratio = new_fibula_dy / baseline_design.fibula_length_dy;
-
-        // Combine ratios with different weights. Width (dx) is most important for sizing.
-        const weighted_avg_ratio = (width_ratio * 0.6) + (depth_ratio * 0.3) + (length_ratio * 0.1);
         
-        const suggested_tibial_width = baseline_design.tibial_width_dx * weighted_avg_ratio;
-        const suggested_tibial_depth = baseline_design.tibial_depth_dz * weighted_avg_ratio;
-
-        const baseline_area = baseline_design.tibial_width_dx * baseline_design.tibial_depth_dz;
-        const new_suggested_area = suggested_tibial_width * suggested_tibial_depth;
-        const area_ratio = new_suggested_area / baseline_area;
-
-        const predicted_stress = maxStress_baseline / area_ratio;
-        const predicted_deformation = maxDeformation_baseline / area_ratio;
-        
-        document.getElementById('suggested-width').textContent = suggested_tibial_width.toFixed(2) + " mm";
-        document.getElementById('suggested-depth').textContent = suggested_tibial_depth.toFixed(2) + " mm";
-        document.getElementById('predicted-stress').textContent = predicted_stress.toFixed(3) + " MPa";
-        document.getElementById('predicted-deformation').textContent = predicted_deformation.toFixed(3) + " mm";
+        visualElement.style.width = visualWidth + 'px';
+        visualElement.style.height = visualHeight + 'px';
+        widthLabel.textContent = `Width: ${stw.toFixed(1)}mm`;
+        depthLabel.textContent = `Depth: ${std.toFixed(1)}mm`;
     }
 
     window.onload = loadData;
